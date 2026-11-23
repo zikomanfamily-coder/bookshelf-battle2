@@ -239,6 +239,13 @@ textarea{width:100%;min-height:160px;font-family:ui-monospace,Menlo,monospace;fo
 .bests .hshelf{height:120px}.bests .hshelf.many .spine:not(.cov){width:20px!important;font-size:9px}
 .rts{display:flex;flex-direction:column;gap:10px}
 .rtw{position:relative}.rtw>.rt{width:100%;padding-right:44px}
+.dbt{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}.dbt button{flex:1;padding:6px;border-radius:8px;background:#0c0a12;border:1px solid #4a4260;color:var(--tx);font-size:13px}.dbt button.on{border-color:var(--gold);color:var(--gold)}
+.dbr{display:flex;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid #2c2638;font-size:13px}.dbr>span{flex:1;min-width:0;line-height:1.3}.dbr small{color:#a9a0b8}
+.dbr button,.dbx button{padding:4px 7px;border-radius:6px;background:#2a2238;border:1px solid #4a4260;color:var(--tx);font-size:12px;white-space:nowrap}
+.dbx{display:flex;flex-wrap:wrap;gap:4px}.dbi{width:100%;padding:8px;border-radius:8px;background:#0c0a12;border:1px solid #4a4260;color:var(--tx);font-size:14px}
+.dbr.dbs{flex-wrap:wrap}.dbr.dbs>span{flex:0 0 100%;white-space:nowrap}.dbr.dbs select{flex:1;min-width:0}
+.dbs select,.dbs input{background:#0c0a12;color:var(--tx);border:1px solid #4a4260;border-radius:6px;padding:4px;font-size:13px}.dbs input{width:64px}
+.dblog{font-size:12px;line-height:1.5;max-height:50vh;overflow:auto;background:#0c0a12;border-radius:8px;padding:8px;white-space:pre-wrap}
 .rq{position:absolute;top:8px;right:8px;z-index:1;width:30px;height:30px;padding:0;border-radius:50%;border:1px solid var(--gold);background:#0c0a12;color:var(--gold);font-size:15px;line-height:1}
 .rt{display:flex;flex-direction:column;gap:8px;text-align:left;padding:12px;border-radius:10px;background:#1d1a26;border:1px solid #4a4260}
 .rt:hover,.rt:focus-visible{border-color:var(--gold)}
@@ -333,7 +340,7 @@ textarea{width:100%;min-height:160px;font-family:ui-monospace,Menlo,monospace;fo
 .bnd>button{padding:10px}
 </style>
 <div id="g">
- <div class="top"><b id="turn"></b><span id="relbar"></span><span class="tr"><span id="deck" role="button" tabindex="0"></span><button id="sndB" type="button" aria-label="設定">⚙</button><button id="goHome" type="button">ホーム</button></span></div>
+ <div class="top"><b id="turn"></b><span id="relbar"></span><span class="tr"><span id="deck" role="button" tabindex="0"></span><button id="dbgB" type="button" hidden aria-label="デバッグ">🔧</button><button id="sndB" type="button" aria-label="設定">⚙</button><button id="goHome" type="button">ホーム</button></span></div>
  <div class="hp"><span class="nm" id="on" style="width:96px">相手</span><span class="n" id="oh"></span><div class="bar"><i id="ob" style="background:#c04060"></i></div></div>
  <div class="st" id="oSt"></div>
  <div class="zone" id="zO"></div>
@@ -422,6 +429,7 @@ textarea{width:100%;min-height:160px;font-family:ui-monospace,Menlo,monospace;fo
   <button id="hBattle" type="button" disabled hidden><i>⚑</i><span>テストバトル<small id="hBattleSub"></small></span></button>
   <button id="hDeck" type="button" disabled hidden><i>▤</i><span>デッキ編集<small>山札に入れる本と枚数を選ぶ</small></span></button>
   <button id="hCard" type="button" disabled hidden><i>✎</i><span>カード編集<small>本カードを作る・直す</small></span></button>
+  <button id="hDbg" type="button" hidden><i>🔧</i><span>デバッグバトル<small>本棚・手札・山札を自由に変えてカードの動きを確認</small></span></button>
   <button id="hDex" type="button"><i>◎</i><span>図鑑<small id="hDexSub">手に入れた本・対戦で見た本</small></span></button>
   <button id="hSnd" type="button"><i>⚙</i><span>設定<small>BGM・効果音・画面サイズ(スマホ/PC)</small></span></button>
  </div>
@@ -959,7 +967,7 @@ function askUI(title,labels,max,min){return new Promise(res=>{busy=true;const se
  const done=r=>{$('ask').className='sheet';busy=false;res(r)};
  $('askOk').onclick=()=>{if(sel.length>=min)done(sel.slice())};$('askSkip').onclick=()=>done([]);
  draw();$('ask').className='sheet on'})}
-function note(t){msg(t)}
+function note(t){msg(t);dlog(t)}
 
 // ===== カード効果 =====
 const FX={};const D=(no,o)=>{FX['c'+no]=o};
@@ -1374,7 +1382,7 @@ function render(){if(!P)return;
  document.querySelectorAll('#g .sc').forEach(el=>el.onclick=()=>showCb(el.dataset.o));
  document.querySelectorAll('#g .nav button').forEach(el=>el.onclick=()=>{const s=el.dataset.o=='P'?P:O,n=s.shelves.length;s.cur=(s.cur+ +el.dataset.d+n)%n;render()});
  $('turn').textContent=`${BC.title} ターン${turn}${P.inExt||O.inExt?'(延長)':''}`;$('deck').textContent='山札 '+P.deck.length+' / 墓地 '+P.grave.length;
- $('goHome').textContent=BC.mode=='run'?'中断':'ホーム';fxScan();
+ $('goHome').textContent=BC.mode=='run'?'中断':'ホーム';$('dbgB').hidden=BC.mode!='debug';fxScan();
  $('mana').innerHTML='マナ '+'<i>◆</i>'.repeat(Math.min(P.mana,8))+' '+P.mana+(P.freeDraw?' <small>無料1</small>':'');
  $('draw').disabled=!active||busy||!canManaDraw(P);$('end').disabled=!active||busy;
  $('hand').innerHTML=P.hand.map((c,i)=>cardH(c,i)).join('');
@@ -1434,6 +1442,38 @@ const cardVal=c=>{if(c.nv)return '—';if(c.base==null)return c.val;const v=live
 const cardH=(c,i,big)=>{const k=CAT[c.ki],p=PUB[c.pi],t=abTxt(c),long=(c.tx||'').length>(big?70:30);return `<div class="card m${['C','U','R'].includes(c.rare)?c.rare:'C'}${c.lend?' lend':''}" style="--c:${k.col}" data-i="${i}">${c.vt=='x'||c.vt=='s'?'':`<b class="vol">${volTxt(c)}<small>巻</small></b>`}<i class="pm">${p.mk}</i><div class="art"><div class="t" style="--n:${Math.max(1,[...c.n].length)}">${esc(c.n)}</div><div class="au" style="--a:${Math.max(1,[...(c.sei+c.mei)].length+1)}">${esc(c.sei)} ${esc(c.mei)}</div></div>${big?`<div class="pi">${p.n} ／ ${k.n}</div>`:''}<div class="v"><small>評価</small>${cardVal(c)}</div><div class="ab${long?' sm':''}">${big?`<span class="ea">${t}</span><span class="ed" hidden>${glossHtml(c)}</span>`:t}</div>${big?'<button type="button" class="xb">解説</button>':''}</div>`};
 const HINT='カードを本棚へドラッグ。カード・本・コンボ欄・本棚詳細・状態マークはタップで詳細';
 let pvAt=0;function showPv(c){if(!c)return;$('pv').innerHTML=cardH(c,0,1);$('pv').className='big on tap';pvAt=Date.now()}
+const DBG={log:[],idle:false,tab:'card',q:'',side:'P'};
+function dlog(t){if(BC&&BC.mode=='debug'){DBG.log.push(`[R${turn}] ${String(t).replace(/<[^>]+>/g,'')}`);if(DBG.log.length>300)DBG.log.shift()}}
+function dbgStart(){$('home').className='';DBG.log=[];const c1=pick1(CATV).n,c2=pick1(CATV).n;
+ startBattle({mode:'debug',title:'デバッグ',pDeck:catDeck(c1,null,12,0,0),pShelves:['basic'],relics:[],enemy:{name:'デバッグ相手',hp:9999,deck:catDeck(c2,null,12,0,0),shelves:['basic'],valAdd:0},onEnd:()=>showHome()});
+ setTimeout(()=>{if(P){P.hp=P.max=9999;O.hp=O.max=9999;render()}},50)}
+const newShelf=id=>({id,def:SHELVES[id]||SHELVES.basic,books:[],deb:{trap:0,thorn:0,maze:0},lock:0,plock:0,only:null,pBonus:0,pCmb:0,pas:[],catFired:false});
+function dbgUI(){if(!P)return;const T=DBG.tab,sd=DBG.side=='P'?P:O,tb=(k,l)=>`<button type="button" data-dbt="${k}" class="${T==k?'on':''}">${l}</button>`;
+ const sideSel=`<div class="dbt">${['P','O'].map(k=>`<button type="button" data-dbside="${k}" class="${DBG.side==k?'on':''}">${k=='P'?'自分':'相手'}</button>`).join('')}</div>`;
+ let h=`<b>デバッグ</b><div class="dbt">${tb('card','カード')}${tb('shelf','本棚')}${tb('state','状態')}${tb('log','ログ')}</div>`;
+ if(T=='card')h+=`${sideSel}<input class="dbi" id="dbq" placeholder="カード名・作者で検索" value="${esc(DBG.q)}"><div id="dbl">${dbgList()}</div>`;
+ else if(T=='shelf')h+=['P','O'].map(k=>{const x=k=='P'?P:O;return `<div style="margin-top:10px;color:var(--gold)">${k=='P'?'自分':'相手'}の本棚</div>`+x.shelves.map((sh,i)=>`<div class="dbr dbs"><span>${i+1}段目(${sh.books.length}冊)</span><select data-dbsh="${k}:${i}">${Object.keys(SHELVES).map(id=>`<option value="${id}" ${sh.id==id?'selected':''}>${SHELVES[id].n}(${SHELVES[id].cap})</option>`).join('')}</select><button type="button" data-dbclr="${k}:${i}">空に</button>${x.shelves.length>1?`<button type="button" data-dbdel="${k}:${i}">削除</button>`:''}</div>`).join('')+(x.shelves.length<3?`<div class="dbx" style="margin-top:6px"><button type="button" data-dbadd="${k}">＋段を追加</button></div>`:'')}).join('');
+ else if(T=='state'){const F=[['hp','HP'],['mana','マナ'],['def','防御'],['know','知識'],['thought','思想'],['claim','主張'],['gloom','憂鬱']];
+  h+=['P','O'].map(k=>{const x=k=='P'?P:O;return `<div style="margin-top:10px;color:var(--gold)">${k=='P'?'自分':'相手'}</div><div class="dbx dbs">${F.map(([f,l])=>`<label style="font-size:12px">${l}<br><input type="number" data-dbst="${k}:${f}" value="${x[f]}"></label>`).join('')}</div>`}).join('')+
+  `<div class="dbx" style="margin-top:12px"><button type="button" data-dbdo="draw">自分:1枚ドロー</button><button type="button" data-dbdo="handgrave">自分:手札を墓地へ</button><button type="button" data-dbdo="idle">${DBG.idle?'相手:何もしない ✓':'相手:何もしない'}</button><button type="button" data-dbdo="eval">今の評価値をログへ</button></div>`}
+ else h+=`<div class="dbx" style="margin:6px 0"><button type="button" data-dbdo="logclr">ログを消す</button></div><div class="dblog">${DBG.log.slice().reverse().map(esc).join('\n')||'まだログはありません'}</div>`;
+ popBox(h);const q=$('dbq');if(q){q.oninput=()=>{DBG.q=q.value;$('dbl').innerHTML=dbgList()}}
+ $('cb').querySelectorAll('[data-dbsh]').forEach(el=>el.onchange=()=>{const [k,i]=el.dataset.dbsh.split(':'),x=k=='P'?P:O,sh=x.shelves[+i];sh.id=el.value;sh.def=SHELVES[el.value];while(sh.books.length>sh.def.cap){const b=sh.books.pop();resetBook(b);x.grave.push(b)}dlog(`${k=='P'?'自分':'相手'}の${+i+1}段目を「${sh.def.n}」に変更`);render();dbgUI()});
+ $('cb').querySelectorAll('[data-dbst]').forEach(el=>el.onchange=()=>{const [k,f]=el.dataset.dbst.split(':'),x=k=='P'?P:O;x[f]=Math.max(0,+el.value||0);if(f=='hp')x.max=Math.max(x.max,x[f]);dlog(`${k=='P'?'自分':'相手'}の${f}を${x[f]}に設定`);render()})}
+function dbgList(){const q=DBG.q.trim().toLowerCase();const L=CARDS.filter(c=>!q||(c.n+au(c)+(c.k||'')).toLowerCase().includes(q)).slice(0,40);
+ return L.map((c,i)=>`<div class="dbr"><span>${esc(c.n)}${c.vt=='n'||c.vt=='j'?` ${c.v}巻`:''}<br><small>${esc(c.sei+(c.mei?' '+c.mei:''))}・${c.k}・評価${c.nv?'—':c.val}</small></span><div class="dbx"><button type="button" data-dbc="${CARDS.indexOf(c)}:hand">手札</button><button type="button" data-dbc="${CARDS.indexOf(c)}:deck">山札上</button><button type="button" data-dbc="${CARDS.indexOf(c)}:shelf">棚に置く</button></div></div>`).join('')||'<div style="margin-top:8px">見つかりません</div>'}
+document.addEventListener('click',e=>{if(!BC||BC.mode!='debug'||!P)return;const t=e.target.closest('[data-dbt],[data-dbside],[data-dbc],[data-dbclr],[data-dbdel],[data-dbadd],[data-dbdo]');if(!t)return;const d=t.dataset;
+ if(d.dbt){DBG.tab=d.dbt;dbgUI();return}if(d.dbside){DBG.side=d.dbside;dbgUI();return}
+ if(d.dbc){const [ci,where]=d.dbc.split(':'),x=DBG.side=='P'?P:O,b=inst(cp1(CARDS[+ci]));const who=DBG.side=='P'?'自分':'相手';
+  if(where=='hand'){x.hand.push(b);toast(`${who}の手札に「${b.n}」`)}else if(where=='deck'){x.deck.push(b);toast(`${who}の山札の上に「${b.n}」`)}
+  else{if(!place(x,b,x.cur)){toast('本棚に空きがありません');return}toast(`${who}の${x.cur+1}段目に「${b.n}」を置いた(効果なし)`)}
+  dlog(`${who}に「${b.n}」を追加(${where=='hand'?'手札':where=='deck'?'山札の上':'本棚'})`);render();return}
+ const sp=v=>{const [k,i]=v.split(':');return [k=='P'?P:O,+i,k]};
+ if(d.dbclr){const [x,i]=sp(d.dbclr);x.shelves[i].books.forEach(b=>{resetBook(b);x.grave.push(b)});x.shelves[i].books=[];dlog(`${i+1}段目を空にした`);render();dbgUI();return}
+ if(d.dbdel){const [x,i]=sp(d.dbdel);x.shelves[i].books.forEach(b=>{resetBook(b);x.grave.push(b)});x.shelves.splice(i,1);x.cur=0;render();dbgUI();return}
+ if(d.dbadd){const x=d.dbadd=='P'?P:O;if(x.shelves.length<3)x.shelves.push(newShelf('basic'));render();dbgUI();return}
+ if(d.dbdo=='draw'){draw(P,1);render()}else if(d.dbdo=='handgrave'){P.grave.push(...P.hand);P.hand=[];render()}else if(d.dbdo=='idle'){DBG.idle=!DBG.idle;dbgUI()}
+ else if(d.dbdo=='logclr'){DBG.log=[];dbgUI()}else if(d.dbdo=='eval'){for(const [x,w] of [[P,'自分'],[O,'相手']]){const ev=evalSide(x);dlog(`${w} 合計${ev.tot}:`+ev.r.map((r,i)=>`${i+1}段目 評価値${r.sum}×${r.mult.toFixed(1)}=${r.fin}(コンボ${r.c})`).join(' / '))}DBG.tab='log';dbgUI()}});
 function popBox(h){$('cb').innerHTML=`<div class="box">${h}<button type="button" class="cbx">閉じる</button></div>`;$('cb').className='on';$('cb').querySelector('.box').scrollTop=0}
 const who=o=>o=='P'?'あなた':esc(BC.enemy.name);
 function showCb(o){const s=o=='P'?P:O,sh=s.shelves[s.cur],all=evalSide(s),e=all.r[s.cur];const pct=e.mult-1-.1*e.c;
@@ -1464,7 +1504,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('.sib');if(b&&P){
 const stHash=()=>[P,O].map(x=>[x.hp,x.def,x.know,x.thought,x.claim,x.gloom,x.mana,x.manaMax,x.na,x.nd,x.hand.length,x.deck.length,x.grave.length,x.gone.length,x.cb,x.battleCb,x.buffs.length,x.refute,x.passBlock,
  x.shelves.map(sh=>sh.books.map(b=>b.u+':'+b.acc+':'+b.tmp+':'+b.cmb+':'+b.ki+':'+b.x2).join(',')+'|'+sh.deb.trap+sh.deb.thorn+sh.deb.maze+'|'+sh.lock+sh.plock+'|'+sh.only).join('/')].join(';')).join('#')+skipRounds;
 let fxQ=0;
-function fxCard(s,b){if(window.FAST||!b)return;const o=s===P?'P':'O';const d=document.createElement('div');d.className='fxc '+o;
+function fxCard(s,b){if(b)dlog(`◆${s===P?'あなた':'相手'}の「${b.n}」の効果が発動`);if(window.FAST||!b)return;const o=s===P?'P':'O';const d=document.createElement('div');d.className='fxc '+o;
  d.innerHTML=cardH(b,0)+`<small class="who">${o=='P'?'あなた':esc(BC.enemy.name)}の「${esc(b.n.replace('【貸本】',''))}」</small>`;
  const delay=Math.max(0,fxQ-Date.now());fxQ=Date.now()+delay+380;d.style.animationDelay=(delay/1000)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),delay+1400)}
 async function runFx(s,b,fn){const h=stHash();await fn();if(stHash()!==h)fxCard(s,b)}
@@ -1477,6 +1517,7 @@ function fxScan(){for(const [s,o] of [[P,'P'],[O,'O']]){if(!s)continue;const cur
  if(cur.know<pv.know)L.push([`知識-${pv.know-cur.know}`,'down']);if(s===P&&cur.mana>pv.mana)L.push([`マナ+${cur.mana-pv.mana}`,'up']);
  if(cur.buf>pv.buf)L.push(['消失効果が発動','up']);if(cur.pas>pv.pas)L.push(['パッシブ発動','up']);
  const hp=cur.hp-pv.hp;if(hp)fxFloat(o=='P'?$('ph'):$('oh'),[[hp<0?`${hp}`:`+${hp}`,hp<0?'dmg':'heal']]);
+ if(L.length)dlog(`${o=='P'?'あなた':'相手'}:${L.map(x=>x[0]).join(' / ')}`);{const hp=cur.hp-pv.hp;if(hp)dlog(`${o=='P'?'あなた':'相手'}:HP${hp>0?'+':''}${hp}`)}
  if(!L.length)continue;fxFloat($(o=='P'?'pSt':'oSt').children.length?$(o=='P'?'pSt':'oSt'):$(o=='P'?'ph':'oh'),L);
  const z=$(o=='P'?'zP':'zO'),bad=L.some(x=>x[1]=='down')&&!L.some(x=>x[1]=='up');z.classList.remove('fup','fdn');void z.offsetWidth;z.classList.add(bad?'fdn':'fup');
  const mine=(o=='P');if(L.some(x=>x[1]=='up'))(mine?seUp:seDown)();else (mine?seDown:seUp)()}}
@@ -1535,7 +1576,7 @@ const ruinVictim=b=>b.fx===FX.cx239||b.fx===FX.cx3||b.fx===FX.cx4;
 function ruinBonus(s,c,m){let x=0;if(m.victim){if(m.victim.fx===FX.cx3||m.victim.fx===FX.cx4)x+=60;else if(m.victim.fx===FX.cx239)x+=30}
  if(c.fx===FX.cx5)x+=200;if(c.fx===FX.cx3||c.fx===FX.cx4){const snd=s.hand.some(h=>h!==c&&(h.erode||[FX.c12,FX.c8,FX.c205,FX.c14].includes(h.fx)));x+=snd?25:-5}
  if([FX.c12,FX.c205,FX.c8].includes(c.fx)&&s.shelves.some(sh=>sh.books.some(b=>b.fx===FX.cx3||b.fx===FX.cx4)))x+=40;return x}
-async function ai(s,my){await sl(600);if(my!=GID)return;
+async function ai(s,my){if(BC&&BC.mode=='debug'&&DBG.idle&&s===O){dlog('相手は何もしない設定');return}await sl(600);if(my!=GID)return;
  while(canManaDraw(s)&&s.hand.length<roomAll(s)+1&&s.mana>0){await manaDraw(s)}render();await sl(400);
  let guard=0;while(my==GID&&!s.endNow&&guard++<40&&s.hp>0){if(!s.hand.length){if(canManaDraw(s)&&s.mana>0){await manaDraw(s);render();continue}break}
   let best=null,bs=-1e9;const base=evalSide(s).tot;
@@ -1617,7 +1658,9 @@ function fit(){const b=document.body,H=b.clientHeight,W=b.clientWidth,pc=isPC(),
 addEventListener('resize',fit);fit();
 $('pv').onclick=e=>{if(Date.now()-pvAt<350)return;if(!e.target.closest('.card'))$('pv').className='big'};
 document.addEventListener('click',e=>{const b=e.target.closest('.xb');if(!b)return;e.stopPropagation();const card=b.closest('.card'),ab=card.querySelector('.ab'),on=!b.classList.contains('on');
- b.classList.toggle('on',on);b.textContent=on?'効果':'解説';ab.classList.toggle('dsc',on);ab.querySelector('.ea').hidden=on;ab.querySelector('.ed').hidden=!on;ab.scrollTop=0},true);$('sndB').onclick=sndUI;
+ b.classList.toggle('on',on);b.textContent=on?'効果':'解説';ab.classList.toggle('dsc',on);ab.querySelector('.ea').hidden=on;ab.querySelector('.ed').hidden=!on;ab.scrollTop=0},true);$('sndB').onclick=sndUI;$('dbgB').onclick=dbgUI;$('hDbg').onclick=dbgStart;
+{let tc=0,tt=0;try{if(localStorage.getItem('bb_debug')=='1')$('hDbg').hidden=false}catch(e){}
+ document.querySelector('#home .logo').onclick=()=>{clearTimeout(tt);tt=setTimeout(()=>tc=0,1500);if(++tc>=5){tc=0;const on=$('hDbg').hidden;$('hDbg').hidden=!on;try{localStorage.setItem('bb_debug',on?'1':'0')}catch(e){}toast(on?'デバッグバトルを表示しました':'デバッグバトルを隠しました')}}}
 $('deck').onclick=()=>{if(!P)return;const g=P.grave;popBox(`<b>墓地(${g.length}冊)</b><div class="mu">山札 ${P.deck.length}冊</div>${g.length?`<div class="gvw">${g.slice().reverse().map(b=>cardH(b,0)).join('')}</div>`:'<div style="margin-top:8px">墓地に本はありません</div>'}`)};$('hSnd').onclick=sndUI;
 $('cb').onclick=e=>{if(e.target.id=='cb'||e.target.closest('.cbx')){$('cb').className='';return}const q=e.target.closest('.qm');if(q){const l=$('cb').querySelector('.cpl');l.hidden=!l.hidden}};
 
@@ -1750,8 +1793,12 @@ function dexRender(){const pool=dexPool(),L=pool.filter(c=>dexCat<0||c.ki===dexC
  $('dexF').innerHTML=`<button type="button" data-c="-1" class="${dexCat<0?'on':''}">すべて</button>`+CATV.map((k,i)=>`<button type="button" data-c="${i}" class="${dexCat==i?'on':''}"><span style="color:${k.col};filter:brightness(1.6)">■</span> ${k.n}</button>`).join('');
  LIST=L.map(norm);$('dexG').innerHTML=LIST.map((c,i)=>`<div class="ci">${DEX.has(dexKey(c))?cardH(c,i):`<div class="dxu">？<small>${CAT[c.ki]?CAT[c.ki].n:''}</small></div>`}</div>`).join('');
  $('dexF').querySelectorAll('button').forEach(b=>b.onclick=()=>{dexCat=+b.dataset.c;dexRender()});
- $('dexG').querySelectorAll('.card').forEach(el=>el.onclick=()=>showPv(LIST[+el.dataset.i]))}
+ const LD=LIST;$('dexG').querySelectorAll('.card').forEach(el=>el.onclick=()=>showPv(LD[+el.dataset.i]))}
 function saveRun(){if(RUN&&RUN.deck)dexAdd(RUN.deck);try{RUN?localStorage.setItem(LR,JSON.stringify(RUN)):localStorage.removeItem(LR)}catch(e){}}
+function refreshCard(c){if(!c||c.lend||c.id==null)return c;const src=CARDS.find(x=>String(x.id)==String(c.id));if(!src)return c;const u=c.u;Object.assign(c,clean(src));if(u)c.u=u;return c}
+function refreshRun(){if(!RUN)return;try{(RUN.deck||[]).forEach(refreshCard);if(RUN.reward&&RUN.reward.books)RUN.reward.books.forEach(refreshCard);
+ if(RUN.shop){Object.values(RUN.shop).forEach(v=>{if(Array.isArray(v))v.forEach(x=>{if(x&&x.id!=null&&x.n)refreshCard(x);if(x&&Array.isArray(x.cards))x.cards.forEach(refreshCard)})})}
+ if(RUN.swap&&RUN.swap.offers)RUN.swap.offers.forEach(o=>o.cards&&o.cards.forEach(refreshCard));saveRun()}catch(e){}}
 function loadRun(){try{const j=localStorage.getItem(LR);if(j){const r=JSON.parse(j);if(r&&r.v==1){RUN=r;(RUN.routes||[]).forEach(rt=>rt.forEach((k,i)=>{if(k=='event')rt[i]='battle'}));if(RUN.route)RUN.route.forEach((k,i)=>{if(k=='event'&&i>(RUN.step||0))RUN.route[i]='battle'})}}}catch(e){}}
 let UID=0;const cp1=c=>Object.assign(clean(c),{u:Date.now().toString(36)+(UID++)});
 const RW={C:6,U:3,R:1};
@@ -1789,9 +1836,10 @@ function newRun(){RUN={v:1,week:1,step:0,route:null,routes:[],deck:[],gold:50,re
 const runEl=$('runBody');let LIST=[];
 function head(){if(!RUN||['start','quiz','pickcat'].includes(RUN.stage))return '';
  return `<div class="rhd"><span><b>第${RUN.week}週</b>${RUN.route?` ${RUN.step+1}/5`:''}</span><span>所持金 <b>${RUN.gold}</b>円</span><button type="button" data-act="deck">本 ${RUN.deck.length}冊</button><button type="button" data-act="items">本棚${RUN.shelves.length}・レリック${RUN.relics.length}</button></div>`}
-function grid(cards,btn){LIST=cards;return `<div class="cg">${cards.map((c,i)=>`<div class="ci">${cardH(norm(c),i)}${btn?btn(c,i):''}</div>`).join('')}</div>`}
+const GRIDS=new Map();let GRIDN=0;
+function grid(cards,btn){LIST=cards;const id=++GRIDN;GRIDS.set(id,cards);if(GRIDS.size>40)GRIDS.delete(GRIDS.keys().next().value);return `<div class="cg" data-g="${id}">${cards.map((c,i)=>`<div class="ci">${cardH(norm(c),i)}${btn?btn(c,i):''}</div>`).join('')}</div>`}
 function show(html){runEl.innerHTML=head()+html;$('run').className='on';$('run').scrollTop=0;
- runEl.querySelectorAll('.cg .card').forEach(el=>el.onclick=()=>showPv(norm(LIST[+el.dataset.i])))}
+ const L0=LIST;runEl.querySelectorAll('.cg .card').forEach(el=>el.onclick=()=>{const g=el.closest('[data-g]'),src=g&&GRIDS.get(+g.dataset.g)||L0;showPv(norm(src[+el.dataset.i]))})}
 function showRun(){bgmPlay('calm');GID++;active=false;$('ov').className='';$('home').className='';if(!RUN){showHome();return}const S=STAGE[RUN.stage];S?S():STAGE.week()}
 runEl.onclick=e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;ACT[b.dataset.act](b.dataset)};
 const QUIZ=[
@@ -2016,14 +2064,14 @@ const ACT={
  leave(){RUN.stage=='pick'?evDone('何もせずに立ち去った。'):advance()},
  home(){RUN=null;saveRun();showHome()},
  deck(){const d=RUN.deck.slice().sort((a,b)=>grpKey(a).localeCompare(grpKey(b),'ja')||volOrd(a)-volOrd(b));$('rsBody').innerHTML=`<h2>デッキ ${d.length}冊</h2>${grid(d)}`;
-  $('rsBody').querySelectorAll('.cg .card').forEach(el=>el.onclick=()=>showPv(norm(LIST[+el.dataset.i])));openSheet('rs',1)},
+  const L1=LIST;$('rsBody').querySelectorAll('.cg .card').forEach(el=>el.onclick=()=>showPv(norm(L1[+el.dataset.i])));openSheet('rs',1)},
  items(){$('rsBody').innerHTML=`<h2>本棚</h2>${RUN.shelves.map((s,i)=>`<div class="relrow"><span class="rl">${i+1}</span><span><b>${SHELVES[s].n}(${SHELVES[s].cap}冊)</b><small>${SHELVES[s].desc}</small></span></div>`).join('')}
   <h2>レリック</h2>${RUN.relics.length?RUN.relics.map(r=>`<div class="relrow"><span class="rl">${RELICS[r].ic}</span><span><b>${RELICS[r].n}</b><small>${RELICS[r].d}</small></span></div>`).join(''):'<p class="abd">まだ持っていません。強敵に勝つか、本屋で手に入ります。</p>'}`;openSheet('rs',1)}};
 $('rsClose').onclick=()=>openSheet('rs',0);
 $('rs').onclick=e=>{if(e.target.id=='rs')openSheet('rs',0)};
 
 loadRun();
-Promise.race([loadCards(),sl(4000).then(()=>null)]).then(a=>{if(Array.isArray(a)&&a.length)CARDS=a.map(clean);['hStart','hCont','hBattle','hDeck','hCard'].forEach(id=>$(id).disabled=false);showHome()});
+Promise.race([loadCards(),sl(4000).then(()=>null)]).then(a=>{if(Array.isArray(a)&&a.length)CARDS=a.map(clean);refreshRun();['hStart','hCont','hBattle','hDeck','hCard'].forEach(id=>$(id).disabled=false);showHome()});
 </script>
 
 </body></html>
